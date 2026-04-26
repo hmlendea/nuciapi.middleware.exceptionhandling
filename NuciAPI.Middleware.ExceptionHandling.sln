@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{664D3F66-229F-4160-8C47-A444B80E7433}") = "NuciAPI.Middleware.ExceptionHandling", "NuciAPI.Middleware.ExceptionHandling\NuciAPI.Middleware.ExceptionHandling.csproj", "{C25150F0-3143-44F8-A4B2-C6DE9F3DB302}"
+EndProject
+Project("{AC187DEA-7C8E-479B-A99E-F941A188DC9A}") = "NuciAPI.Middleware.ExceptionHandling.UnitTests", "NuciAPI.Middleware.ExceptionHandling.UnitTests\NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj", "{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C25150F0-3143-44F8-A4B2-C6DE9F3DB302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C25150F0-3143-44F8-A4B2-C6DE9F3DB302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C25150F0-3143-44F8-A4B2-C6DE9F3DB302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C25150F0-3143-44F8-A4B2-C6DE9F3DB302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|x64.Build.0 = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Debug|x86.Build.0 = Debug|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|x64.ActiveCfg = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|x64.Build.0 = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|x86.ActiveCfg = Release|Any CPU
+		{4F6D6937-3B65-4150-80C1-A2DA761F8DBD}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
