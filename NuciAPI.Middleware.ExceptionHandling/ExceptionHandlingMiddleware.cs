@@ -71,7 +71,7 @@ namespace NuciAPI.Middleware.ExceptionHandling
                     NuciApiErrorResponse.NotFound);
             }
             catch (Exception exception) when (
-                exception is EntityNotFoundException ||
+                exception is EntityAlreadyExistsException ||
                 exception is RequestAlreadyProcessedException)
             {
                 await WriteErrorResponseAsync(
