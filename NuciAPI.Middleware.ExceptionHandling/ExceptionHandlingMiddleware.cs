@@ -70,23 +70,19 @@ namespace NuciAPI.Middleware.ExceptionHandling
                     HttpStatusCode.NotFound,
                     NuciApiErrorResponse.NotFound);
             }
-            catch (Exception exception) when (
-                exception is EntityAlreadyExistsException ||
-                exception is RequestAlreadyProcessedException)
+            catch (EntityAlreadyExistsException)
             {
                 await WriteErrorResponseAsync(
                     context,
                     HttpStatusCode.Conflict,
                     NuciApiErrorResponse.AlreadyExists);
             }
-            catch (RequestAlreadyProcessedException exception)
+            catch (RequestAlreadyProcessedException)
             {
                 await WriteErrorResponseAsync(
                     context,
                     HttpStatusCode.Conflict,
-                    new NuciApiErrorResponse(
-                        exception.Message,
-                        NuciApiResponseCodes.ErrorCodes.AlreadyProcessed));
+                    NuciApiErrorResponse.AlreadyProcessed);
             }
             catch (NotImplementedException exception)
             {
