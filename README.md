@@ -143,6 +143,10 @@ Please:
 - [NuciAPI.Middleware.Logging](https://github.com/hmlendea/nuciapi.middleware.logging)
 - [NuciAPI.Middleware.Security](https://github.com/hmlendea/nuciapi.middleware.security)
 
+## Security
+
+Report security vulnerabilities according to the [Security Policy](./SECURITY.md).
+
 ## License
 
 Licensed under the GNU General Public License v3.0 or later.
