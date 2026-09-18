@@ -147,6 +147,10 @@ Please:
 
 Report security vulnerabilities according to the [Security Policy](./SECURITY.md).
 
+## Architecture
+
+Architecture boundaries, runtime flow, and compatibility contracts are documented in [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 ## License
 
 Licensed under the GNU General Public License v3.0 or later.
