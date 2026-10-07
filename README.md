@@ -37,6 +37,7 @@ It is intended for NuciAPI-based services and integrates directly into the reque
 - [Contributing](#contributing)
 - [Project Engagement](#project-engagement)
 - [License](#license)
+- [Documentation](#documentation)
 
 ## ✨ Capabilities
 
@@ -214,6 +215,23 @@ Report security vulnerabilities according to the [Security Policy](./SECURITY.md
 ## 🔐 Privacy
 
 See the [Privacy Policy](./PRIVACY.md) for data handling practices.
+
+## 📚 Documentation
+
+Detailed technical documentation is available in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [Overview](docs/overview.md) | High-level purpose, scope, capabilities, and boundaries |
+| [Architecture](docs/architecture.md) | Component view, data flows, dependencies, extension points |
+| [Exception Mapping](docs/exception-mapping.md) | Complete exception-to-HTTP status code mapping reference |
+| [Testing](docs/testing.md) | Test structure, execution, coverage, adding tests |
+| [Development](docs/development.md) | Build, test, pack, release, contribution workflow |
+
+See also the root-level documents:
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System context and architectural style
+- [SECURITY.md](SECURITY.md) — Vulnerability reporting and disclosure policy
+- [PRIVACY.md](PRIVACY.md) — Data handling practices
 
 ## 💝 Project Engagement
 
