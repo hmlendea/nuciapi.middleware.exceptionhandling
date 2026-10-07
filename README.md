@@ -33,6 +33,7 @@ It is intended for NuciAPI-based services and integrates directly into the reque
 - [Architecture](#architecture)
 - [Related Projects](#related-projects)
 - [Security](#security)
+- [Privacy](#privacy)
 - [Contributing](#contributing)
 - [Project Engagement](#project-engagement)
 - [License](#license)
@@ -209,6 +210,10 @@ See the [architecture documentation](ARCHITECTURE.md) for the system context, pr
 ## 🔒 Security
 
 Report security vulnerabilities according to the [Security Policy](./SECURITY.md).
+
+## 🔐 Privacy
+
+See the [Privacy Policy](./PRIVACY.md) for data handling practices.
 
 ## 💝 Project Engagement
 
