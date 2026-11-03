@@ -1,141 +1,99 @@
 [![Donate](https://img.shields.io/badge/-%E2%99%A5%20Donate-%23ff69b4)](https://hmlendea.go.ro/funding)
 [![Latest Release](https://img.shields.io/github/v/release/hmlendea/nuciapi.middleware.exceptionhandling)](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/releases/latest)
 [![Build Status](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/actions/workflows/dotnet.yml/badge.svg)](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/actions/workflows/dotnet.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://gnu.org/licenses/gpl-3.0)
+[![NuGet](https://img.shields.io/nuget/v/NuciAPI.Middleware.ExceptionHandling)](https://nuget.org/packages/NuciAPI.Middleware.ExceptionHandling)
+[![License](https://img.shields.io/github/license/hmlendea/nuciapi.middleware.exceptionhandling)](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/LICENSE)
 
 # NuciAPI.Middleware.ExceptionHandling
 
-ASP.NET Core middleware that translates common runtime exceptions into consistent JSON API error responses.
-
-It is intended for NuciAPI-based services and integrates directly into the request pipeline through a single extension method.
+NuciAPI.Middleware.ExceptionHandling is an ASP.NET Core middleware library that translates selected runtime exceptions from the downstream request pipeline into consistent JSON HTTP error responses. It is distributed as a NuciAPI.Middleware.ExceptionHandling NuGet package targeting `net10.0`.
 
 ## 📑 Table of Contents
 
 - [Capabilities](#capabilities)
 - [Installation](#installation)
-    - [.NET CLI](#net-cli)
-    - [Package Manager](#package-manager)
+  - [Package Manager Installation](#package-manager-installation)
 - [Usage](#usage)
-    - [Minimal API (Program.cs)](#minimal-api-programcs)
-    - [ASP.NET Core Startup class](#aspnet-core-startup-class)
-    - [Exception Mapping](#exception-mapping)
-    - [Response Format](#response-format)
-    - [Notes](#notes)
 - [Compatibility](#compatibility)
 - [Development](#development)
-    - [Requirements](#requirements-1)
-    - [Setup](#setup)
-    - [Build](#build)
-    - [Test](#test)
-    - [Pack](#pack)
+  - [Requirements](#requirements)
+  - [Setup](#setup)
+  - [Build](#build)
+  - [Test](#test)
 - [GitHub Actions](#github-actions)
 - [Project Structure](#project-structure)
+  - [Projects and Packages](#projects-and-packages)
+  - [Directories](#directories)
 - [Architecture](#architecture)
-- [Related Projects](#related-projects)
-- [Security](#security)
-- [Privacy](#privacy)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
+- [Security](#security)
+- [Privacy and Data](#privacy-and-data)
 - [Project Engagement](#project-engagement)
 - [License](#license)
-- [Documentation](#documentation)
 
 ## ✨ Capabilities
 
-- Registers exception handling in an ASP.NET Core pipeline with `UseNuciApiExceptionHandling()`.
-- Maps recognised exceptions to consistent HTTP status codes and `NuciApiErrorResponse` payloads.
-- Writes JSON responses with `Content-Type: application/json`.
-- Represents client-aborted requests with HTTP 499.
+- **Pipeline registration** — `app.UseNuciApiExceptionHandling()` registers the middleware at the chosen pipeline position.
+- **Exception classification** — Maps 10 exception categories to specific HTTP status codes (400, 401, 403, 404, 409, 499, 500, 501, 503).
+- **Consistent JSON responses** — All error responses use `NuciApiErrorResponse` from `NuciAPI.Responses` with `Content-Type: application/json`.
+- **Client-abort representation** — `OperationCanceledException` maps to HTTP 499 (non-standard, client-closed request).
+- **Fallback handling** — Any unmapped exception produces HTTP 500 with `NuciApiErrorResponse.InternalServerError`.
 
 ## 📦 Installation
 
-[![Get it from NuGet](https://raw.githubusercontent.com/hmlendea/readme-assets/master/badges/stores/nuget.png)](https://nuget.org/packages/NuciAPI.Middleware.ExceptionHandling)
+[![Obtain it from NuGet](https://raw.githubusercontent.com/hmlendea/readme-assets/master/badges/stores/nuget.png)](https://nuget.org/packages/NuciAPI.Middleware.ExceptionHandling)
 
-### .NET CLI
+### Package Manager Installation
 
 ```bash
 dotnet add package NuciAPI.Middleware.ExceptionHandling
 ```
 
-### Package Manager
-
+Or, via the `Package Manager Console`:
 ```powershell
 Install-Package NuciAPI.Middleware.ExceptionHandling
 ```
 
 ## 🚀 Usage
 
-Register the middleware in your application startup pipeline.
-
-### Minimal API (Program.cs)
+Register the middleware in your ASP.NET Core application's request pipeline:
 
 ```csharp
-using NuciAPI.Middleware.ExceptionHandling;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-WebApplication app = builder.Build();
+var app = builder.Build();
 
 app.UseNuciApiExceptionHandling();
 
-app.MapGet("/", () => "OK");
+// ... other middleware and endpoint mappings
 
 app.Run();
 ```
 
-### ASP.NET Core Startup class
+The middleware catches exceptions thrown by downstream components and converts them to standardised JSON error responses. Place it early enough in the pipeline to catch exceptions from controllers, endpoint filters, and other middleware.
 
-```csharp
-using NuciAPI.Middleware.ExceptionHandling;
+### Exception Mapping Table
 
-public class Startup
-{
-    public void Configure(IApplicationBuilder app)
-    {
-        app.UseNuciApiExceptionHandling();
+| Exception Type(s) | HTTP Status | Status Code | Response Payload |
+|-------------------|-------------|-------------|------------------|
+| `BadHttpRequestException`, `FormatException`, `ArgumentException`, `ValidationException` | Bad Request | 400 | `NuciApiErrorResponse(exception.Message, ErrorCodes.BadRequest)` |
+| `SecurityException`, `UnauthorizedAccessException` | Forbidden | 403 | `NuciApiErrorResponse.Unauthorised` |
+| `HttpRequestException`, `TaskCanceledException`, `TimeoutException` | Service Unavailable | 503 | `NuciApiErrorResponse.ServiceDependencyUnavailable` |
+| `AuthenticationException` | Unauthorized | 401 | `NuciApiErrorResponse.AuthenticationFailure` |
+| `EntityNotFoundException`, `KeyNotFoundException` | Not Found | 404 | `NuciApiErrorResponse.NotFound` |
+| `EntityAlreadyExistsException` | Conflict | 409 | `NuciApiErrorResponse.AlreadyExists` |
+| `RequestAlreadyProcessedException` | Conflict | 409 | `NuciApiErrorResponse.AlreadyProcessed` |
+| `NotImplementedException` | Not Implemented | 501 | `NuciApiErrorResponse(message, ErrorCodes.NotImplemented)` |
+| `OperationCanceledException` | Client Closed Request | 499 | `NuciApiErrorResponse.ClientClosedTheRequest` |
+| *Any other exception* | Internal Server Error | 500 | `NuciApiErrorResponse.InternalServerError` |
 
-        // Other middleware/components
-    }
-}
-```
-
-### Exception Mapping
-
-The middleware currently maps the following exceptions:
-
-| Exception type(s) | HTTP status | Error response |
-| --- | --- | --- |
-| `BadHttpRequestException`, `FormatException`, `ArgumentException`, `ValidationException` | 400 Bad Request | `NuciApiErrorResponse` with exception message and bad-request code |
-| `SecurityException`, `UnauthorizedAccessException` | 403 Forbidden | `NuciApiErrorResponse.Unauthorised` |
-| `HttpRequestException`, `TaskCanceledException`, `TimeoutException` | 503 Service Unavailable | `NuciApiErrorResponse.ServiceDependencyUnavailable` |
-| `AuthenticationException` | 401 Unauthorized | `NuciApiErrorResponse.AuthenticationFailure` |
-| `EntityNotFoundException`, `KeyNotFoundException` | 404 Not Found | `NuciApiErrorResponse.NotFound` |
-| `EntityAlreadyExistsException` | 409 Conflict | `NuciApiErrorResponse.AlreadyExists` |
-| `RequestAlreadyProcessedException` | 409 Conflict | `NuciApiErrorResponse.AlreadyProcessed` |
-| `NotImplementedException` | 501 Not Implemented | `NuciApiErrorResponse` with not-implemented code |
-| `OperationCanceledException` | 499 Client Closed Request | `NuciApiErrorResponse.ClientClosedTheRequest` |
-| Any other unhandled exception | 500 Internal Server Error | `NuciApiErrorResponse.InternalServerError` |
-
-### Response Format
-
-Responses are written as JSON and use the error response types from `NuciAPI.Responses`.
-
-The middleware sets:
-
-- status code according to the mapping table
-- `Content-Type: application/json`
-
-### Notes
-
-- Register this middleware early enough in the pipeline to capture downstream exceptions.
-- The middleware converts exceptions to HTTP responses and prevents unhandled exceptions from propagating further.
-- For cancellations, client-aborted requests are represented as HTTP 499.
+See [docs/exception-mapping.md](docs/exception-mapping.md) for the complete authoritative mapping with source packages and implementation notes.
 
 ## 🧩 Compatibility
 
-| Component | Supported version | Notes |
-|-----------|------------------|-------|
+| Component | Supported Versions | Notes |
+|-----------|--------------------|-------|
 | .NET | `net10.0` | The package targets .NET 10. |
 | ASP.NET Core | `Microsoft.AspNetCore.App` for `net10.0` | Required framework reference. |
-
 
 ## 🛠️ Development
 
@@ -161,27 +119,90 @@ dotnet build NuciAPI.Middleware.ExceptionHandling.sln
 dotnet test NuciAPI.Middleware.ExceptionHandling.sln
 ```
 
-### Pack
-
-```bash
-dotnet pack NuciAPI.Middleware.ExceptionHandling.sln -c Release
-```
-
 ## ⚙️ GitHub Actions
 
 | Workflow | Purpose | What it does |
 |----------|---------|--------------|
-| [.NET](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/dotnet.yml) | Continuous integration | Restores, builds, and tests on pushes and pull requests targeting `master`. |
-| [GitHub Release](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/github-release.yml) | Package publication | Packs the published release version and uploads the NuGet package and SHA256 checksum to the GitHub Release. |
+| [dotnet.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/dotnet.yml) | Continuous Integration | Restores, builds, and tests on every push and PR to `master` |
+| [github-release.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/github-release.yml) | Release Packaging | Packs Release configuration, calculates SHA256, uploads `.nupkg` to GitHub Release, appends checksum to release notes |
+| [nuget-release.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/nuget-release.yml) | NuGet.org Publishing | Publishes the NuGet package to NuGet.org using OIDC authentication when a GitHub Release is published |
 
 ## 🗂️ Project Structure
 
-| Project or directory | Purpose |
-|----------------------|---------|
-| [`NuciAPI.Middleware.ExceptionHandling`](NuciAPI.Middleware.ExceptionHandling) | Library implementation and public pipeline extension. |
-| [`NuciAPI.Middleware.ExceptionHandling.UnitTests`](NuciAPI.Middleware.ExceptionHandling.UnitTests) | NUnit tests for exception mapping and downstream delegation. |
-| [`.github/workflows`](.github/workflows) | Continuous integration and release automation. |
-| [`NuciAPI.Middleware.ExceptionHandling.sln`](NuciAPI.Middleware.ExceptionHandling.sln) | Solution containing the library and unit tests. |
+```
+nuciapi.middleware.exceptionhandling/
+├── .github/workflows/           # CI/CD automation
+│   ├── dotnet.yml              # Continuous integration
+│   ├── github-release.yml      # Release packaging
+│   └── nuget-release.yml       # NuGet.org publishing
+├── NuciAPI.Middleware.ExceptionHandling/          # Library project
+│   ├── ExceptionHandlingMiddleware.cs             # Core middleware
+│   ├── ExceptionHandlingMiddlewareExtensions.cs   # Public API
+│   ├── NuciAPI.Middleware.ExceptionHandling.csproj
+│   └── AssemblyInfo.cs
+├── NuciAPI.Middleware.ExceptionHandling.UnitTests/  # Test project
+│   ├── ExceptionHandlingMiddlewareTests.cs
+│   └── NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj
+├── NuciAPI.Middleware.ExceptionHandling.ArchitectureTests/  # Architecture tests
+│   ├── ArchitectureProjectSourceTests.cs
+│   ├── AssemblyInfo.cs
+│   ├── NuciAPI.Middleware.ExceptionHandling.ArchitectureTests.csproj
+│   ├── ProductionArchitectureTests.cs
+│   ├── ProjectConfigurationTests.cs
+│   └── SourceFileConventionTests.cs
+├── NuciAPI.Middleware.ExceptionHandling.sln       # Solution file
+├── ARCHITECTURE.md                                # Root architecture doc
+├── README.md                                      # This file
+├── SECURITY.md                                    # Security policy
+├── PRIVACY.md                                     # Privacy policy
+├── LICENSE                                        # GPL-3.0-or-later
+└── docs/                                          # Technical documentation
+    ├── overview.md
+    ├── architecture.md
+    ├── exception-mapping.md
+    ├── testing.md
+    └── development.md
+```
+
+### Projects and Packages
+
+| Project | Type | Purpose |
+|---------|------|---------|
+| `NuciAPI.Middleware.ExceptionHandling` | Library (NuGet) | Exception handling middleware |
+| `NuciAPI.Middleware.ExceptionHandling.UnitTests` | Test (NUnit) | Unit tests for exception mappings |
+| `NuciAPI.Middleware.ExceptionHandling.ArchitectureTests` | Test (ArchUnitNET, NUnit) | Architecture and convention tests |
+
+### Directories
+
+| Directory | Purpose |
+|-----------|---------|
+| `.github/workflows/` | GitHub Actions CI/CD pipelines |
+| `NuciAPI.Middleware.ExceptionHandling/` | Main library source |
+| `NuciAPI.Middleware.ExceptionHandling.UnitTests/` | Unit test project |
+| `NuciAPI.Middleware.ExceptionHandling.ArchitectureTests/` | Architecture test project |
+| `docs/` | Technical documentation |
+
+## 🏗️ Architecture
+
+NuciAPI.Middleware.ExceptionHandling follows a library-oriented ASP.NET Core middleware adapter pattern with a public extension method and an internal sealed middleware implementation.
+
+See the [architecture documentation](ARCHITECTURE.md) for the system context, principal components, runtime flows, ownership boundaries, dependencies, constraints, and extension points.
+
+## 📚 Documentation
+
+| Resource | Description |
+|----------|-------------|
+| [README.md](README.md) | Installation, usage, exception mapping table, quick start |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System context, architectural style, runtime flows, deployment |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting, supported versions, disclosure policy |
+| [PRIVACY.md](PRIVACY.md) | Data handling practices (no personal data collected) |
+| [LICENSE](LICENSE) | GPL-3.0-or-later license text |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [docs/overview.md](docs/overview.md) | High-level purpose, scope, capabilities, and boundaries |
+| [docs/architecture.md](docs/architecture.md) | Detailed component view, data flows, dependencies, extension points |
+| [docs/exception-mapping.md](docs/exception-mapping.md) | Complete authoritative exception-to-HTTP mapping table |
+| [docs/testing.md](docs/testing.md) | Test structure, execution, coverage analysis, adding tests |
+| [docs/development.md](docs/development.md) | Build, test, pack, release, contribution workflow |
 
 ## 🤝 Contributing
 
@@ -199,49 +220,27 @@ When doing so, please:
 
 See the [contributing guidelines](./CONTRIBUTING.md) for details on how to report issues, suggest enhancements, and submit changes.
 
-## 🏗️ Architecture
-
-See the [architecture documentation](ARCHITECTURE.md) for the system context, principal components, runtime flows, ownership boundaries, dependencies, constraints, and extension points.
-
-## 🔗 Related Projects
-
-- [NuciAPI.Middleware](https://github.com/hmlendea/nuciapi.middleware)
-- [NuciAPI.Middleware.ExceptionHandling](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling)
-- [NuciAPI.Middleware.Logging](https://github.com/hmlendea/nuciapi.middleware.logging)
-- [NuciAPI.Middleware.Security](https://github.com/hmlendea/nuciapi.middleware.security)
-
 ## 🔒 Security
 
-Report security vulnerabilities according to the [Security Policy](./SECURITY.md).
+NuciAPI.Middleware.ExceptionHandling follows a responsible disclosure policy for security vulnerabilities.
 
-## 🔐 Privacy
+For information on reporting security vulnerabilities, see [SECURITY.md](./SECURITY.md).
 
-See the [Privacy Policy](./PRIVACY.md) for data handling practices.
+## 🛡️ Privacy and Data
 
-## 📚 Documentation
+NuciAPI.Middleware.ExceptionHandling collects, transmits, and stores no personal data. It operates entirely within the consumer application's process and does not communicate with external services, telemetry endpoints, or project maintainers.
 
-Detailed technical documentation is available in the [`docs/`](docs/) directory:
-
-| Document | Description |
-|----------|-------------|
-| [Overview](docs/overview.md) | High-level purpose, scope, capabilities, and boundaries |
-| [Architecture](docs/architecture.md) | Component view, data flows, dependencies, extension points |
-| [Exception Mapping](docs/exception-mapping.md) | Complete exception-to-HTTP status code mapping reference |
-| [Testing](docs/testing.md) | Test structure, execution, coverage, adding tests |
-| [Development](docs/development.md) | Build, test, pack, release, contribution workflow |
-
-See also the root-level documents:
-- [ARCHITECTURE.md](ARCHITECTURE.md) — System context and architectural style
-- [SECURITY.md](SECURITY.md) — Vulnerability reporting and disclosure policy
-- [PRIVACY.md](PRIVACY.md) — Data handling practices
+For the detailed description of how the application handles privacy and personal data, see [PRIVACY.md](./PRIVACY.md).
 
 ## 💝 Project Engagement
 
 Discovered a problem or have a suggestion? [Open an issue](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/issues)!
 
-If you find this project useful, consider starring ⭐️ it on GitHub!
+If you find this project useful, consider [funding it](https://hmlendea.go.ro/funding) or starring ⭐️ it on GitHub!
+
+[![Donate](https://raw.githubusercontent.com/hmlendea/readme-assets/master/donate_generic.png)](https://hmlendea.go.ro/funding)
 
 ## 📄 License
 
-This project is being distributed under the `GNU General Public License v3.0` or later.
-See [LICENSE](LICENSE) for further information.
+This project is being distributed under the `GNU General Public License v3.0 or later`.
+See [LICENSE](./LICENSE) for additional information.
