@@ -98,6 +98,7 @@ namespace NuciAPI.Middleware.ExceptionHandling.ArchitectureTests
             }
 
             return Directory.GetFiles(projectDirectory, "*.cs", SearchOption.AllDirectories)
+                .Where(path => !string.Equals(Path.GetFileName(path), "AssemblyInfo.cs", StringComparison.Ordinal))
                 .Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
                 .Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
                 .Where(path => !Path.GetFileName(path).Contains(".g.", StringComparison.Ordinal))

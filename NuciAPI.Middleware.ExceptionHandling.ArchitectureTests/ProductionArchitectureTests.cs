@@ -1,9 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using ArchUnitNET.Domain;
-using ArchUnitNET.Loader;
-using ArchUnitNET.NUnit;
+using ArchUnitNet;
+using ArchUnitNet.Testing;
 using NUnit.Framework;
 using Production = NuciAPI.Middleware.ExceptionHandling;
 
@@ -17,10 +17,6 @@ namespace NuciAPI.Middleware.ExceptionHandling.ArchitectureTests
             typeof(Production.ExceptionHandlingMiddlewareExtensions).Assembly
         };
 
-        private static readonly Architecture architecture = new ArchLoader()
-            .LoadAssemblies(productionAssemblies)
-            .Build();
-
         [Test]
         public void Given_ProductionAssemblies_When_Loaded_Then_AssemblyInventoryIsExplicitAndNonEmpty()
         {
@@ -30,12 +26,6 @@ namespace NuciAPI.Middleware.ExceptionHandling.ArchitectureTests
                 Assert.That(productionAssemblies, Has.All.Not.Null);
                 Assert.That(productionAssemblies, Has.All.Not.EqualTo(typeof(ProductionArchitectureTests).Assembly));
             });
-        }
-
-        [Test]
-        public void Given_ProductionTypes_When_Inspected_Then_ArchitectureContainsExpectedTypes()
-        {
-            Assert.That(architecture.GetObjects(typeof(Production.ExceptionHandlingMiddlewareExtensions)), Is.Not.Empty);
         }
 
         [Test]
@@ -74,11 +64,17 @@ namespace NuciAPI.Middleware.ExceptionHandling.ArchitectureTests
         }
 
         [Test]
-        public void Given_ProductionAssemblies_When_Inspected_Then_NoDependencyCycleExists()
+        public void Given_ProductionProject_When_Inspected_Then_FilesHaveNoDependencyCycles()
         {
-            Architecture architectureUnderTest = architecture;
+            string repositoryDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
+            Directory.SetCurrentDirectory(repositoryDirectory);
+            string projectPath = Path.Combine("NuciAPI.Middleware.ExceptionHandling", "NuciAPI.Middleware.ExceptionHandling.csproj");
+            var rule = ArchUnit.ProjectFiles(projectPath)
+                .InPath("**/*.cs")
+                .Should()
+                .HaveNoCycles();
 
-            Assert.That(architectureUnderTest, Is.Not.Null);
+            ArchAssert.Passes(rule, message: "Production source files must not contain dependency cycles.");
         }
     }
 }
