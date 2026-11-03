@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="NuciAPI.Middleware.ExceptionHandling/NuciAPI.Middleware.ExceptionHandling.csproj" />
+  <Project Path="NuciAPI.Middleware.ExceptionHandling.ArchitectureTests/NuciAPI.Middleware.ExceptionHandling.ArchitectureTests.csproj" />
+  <Project Path="NuciAPI.Middleware.ExceptionHandling.UnitTests/NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj" />
+</Solution>

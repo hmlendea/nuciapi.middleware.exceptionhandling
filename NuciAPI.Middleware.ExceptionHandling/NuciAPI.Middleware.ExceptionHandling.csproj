@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>NuciAPI.Middleware.ExceptionHandling</RootNamespace>
+    <Nullable>enable</Nullable>
     <Version>1.0.2</Version>
     <Description>NuciAPI.Middleware.ExceptionHandling</Description>
     <Authors>Horațiu Mlendea</Authors>
