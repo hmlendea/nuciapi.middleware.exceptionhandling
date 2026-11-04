@@ -11,20 +11,27 @@ NuciAPI.Middleware.ExceptionHandling is an ASP.NET Core middleware library that 
 ## 📑 Table of Contents
 
 - [Capabilities](#capabilities)
+- [Use Cases](#use-cases)
+- [Usage](#usage)
+- [Known Limitations](#known-limitations)
 - [Installation](#installation)
   - [Package Manager Installation](#package-manager-installation)
-- [Usage](#usage)
 - [Compatibility](#compatibility)
 - [Development](#development)
   - [Requirements](#requirements)
   - [Setup](#setup)
   - [Build](#build)
   - [Test](#test)
+  - [Release](#release)
+  - [Dependencies](#dependencies)
+  - [Debugging and Profiling](#debugging-and-profiling)
 - [GitHub Actions](#github-actions)
 - [Project Structure](#project-structure)
   - [Projects and Packages](#projects-and-packages)
   - [Directories](#directories)
 - [Architecture](#architecture)
+- [Versioning](#versioning)
+- [Related Projects](#related-projects)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Security](#security)
@@ -40,20 +47,10 @@ NuciAPI.Middleware.ExceptionHandling is an ASP.NET Core middleware library that 
 - **Client-abort representation** — `OperationCanceledException` maps to HTTP 499 (non-standard, client-closed request).
 - **Fallback handling** — Any unmapped exception produces HTTP 500 with `NuciApiErrorResponse.InternalServerError`.
 
-## 📦 Installation
+## 🎯 Use Cases
 
-[![Obtain it from NuGet](https://raw.githubusercontent.com/hmlendea/readme-assets/master/badges/stores/nuget.png)](https://nuget.org/packages/NuciAPI.Middleware.ExceptionHandling)
-
-### Package Manager Installation
-
-```bash
-dotnet add package NuciAPI.Middleware.ExceptionHandling
-```
-
-Or, via the `Package Manager Console`:
-```powershell
-Install-Package NuciAPI.Middleware.ExceptionHandling
-```
+- **Application developers building NuciAPI-based services** — Need standardised error responses without custom exception handling code.
+- **Contributors modifying response semantics, exception mappings, or HTTP contracts** — Extend or adjust the middleware behaviour for specific requirements.
 
 ## 🚀 Usage
 
@@ -88,6 +85,28 @@ The middleware catches exceptions thrown by downstream components and converts t
 
 See [docs/exception-mapping.md](docs/exception-mapping.md) for the complete authoritative mapping with source packages and implementation notes.
 
+## ⚠️ Known Limitations
+
+- **No public extensibility** — Exception mappings are fixed at compile time; consumers cannot add custom mappings without forking or wrapping the middleware.
+- **Pipeline scope only** — Only exceptions from the downstream `RequestDelegate` are caught; exceptions before this middleware or after the response has started are not handled.
+- **No configuration** — Behaviour cannot be adjusted via options; all mappings and status codes are hard-coded.
+- **No logging or authentication** — The middleware does not log exceptions or perform authentication/authorisation; it delegates to the consumer application and other NuciAPI middleware.
+
+## 📦 Installation
+
+[![Obtain it from NuGet](https://raw.githubusercontent.com/hmlendea/readme-assets/master/badges/stores/nuget.png)](https://nuget.org/packages/NuciAPI.Middleware.ExceptionHandling)
+
+### Package Manager Installation
+
+```bash
+dotnet add package NuciAPI.Middleware.ExceptionHandling
+```
+
+Or, via the `Package Manager Console`:
+```powershell
+Install-Package NuciAPI.Middleware.ExceptionHandling
+```
+
 ## 🧩 Compatibility
 
 | Component | Supported Versions | Notes |
@@ -104,20 +123,48 @@ See [docs/exception-mapping.md](docs/exception-mapping.md) for the complete auth
 ### Setup
 
 ```bash
-dotnet restore NuciAPI.Middleware.ExceptionHandling.sln
+dotnet restore NuciAPI.Middleware.ExceptionHandling.slnx
 ```
 
 ### Build
 
 ```bash
-dotnet build NuciAPI.Middleware.ExceptionHandling.sln
+dotnet build NuciAPI.Middleware.ExceptionHandling.slnx
+```
+
+Create a NuGet package (Release):
+```bash
+dotnet pack NuciAPI.Middleware.ExceptionHandling.slnx -c Release
 ```
 
 ### Test
 
 ```bash
-dotnet test NuciAPI.Middleware.ExceptionHandling.sln
+dotnet test NuciAPI.Middleware.ExceptionHandling.slnx
 ```
+
+### Release
+
+Releases are automated via GitHub Actions:
+
+1. Create a GitHub Release with a tag matching `v{Version}` (e.g., `v1.0.3`).
+2. The `github-release.yml` workflow packs the `Release` configuration, calculates SHA256, uploads the `.nupkg` to the GitHub Release, and appends the checksum to the release notes.
+3. The `nuget-release.yml` workflow publishes the package to NuGet.org using OIDC authentication when the GitHub Release is published.
+
+No local release script exists. All packaging and publishing steps execute in the CI environment.
+
+### Dependencies
+
+| Package | Version | Scope | Purpose |
+|---------|---------|-------|---------|
+| `NuciAPI.Middleware` | 2.0.3 | Runtime | Base middleware class |
+| `NuciAPI.Middleware.Security` | 1.0.6 | Runtime | Security exceptions, idempotency |
+| `NuciDAL` | 3.2.1 | Runtime | Repository exceptions |
+| `NuciLog.Core` | 3.1.0 | Runtime | Logging |
+
+### Debugging and Profiling
+
+Debug unit tests in VS Code, Visual Studio, or Rider using the .NET Test Explorer. To debug the middleware in a consumer application, build a local package (`dotnet pack -c Debug -o ./local-packages`), add it as a local NuGet source, reference it from the consumer, and attach the debugger to the consumer process.
 
 ## ⚙️ GitHub Actions
 
@@ -139,7 +186,11 @@ nuciapi.middleware.exceptionhandling/
 │   ├── ExceptionHandlingMiddleware.cs             # Core middleware
 │   ├── ExceptionHandlingMiddlewareExtensions.cs   # Public API
 │   ├── NuciAPI.Middleware.ExceptionHandling.csproj
-│   └── AssemblyInfo.cs
+│   ├── AssemblyInfo.cs
+│   └── Logging/                                   # Logging middleware (internal)
+│       ├── MyLogInfoKey.cs
+│       ├── MyOperation.cs
+│       └── RequestLoggingMiddleware.cs
 ├── NuciAPI.Middleware.ExceptionHandling.UnitTests/  # Test project
 │   ├── ExceptionHandlingMiddlewareTests.cs
 │   └── NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj
@@ -150,13 +201,15 @@ nuciapi.middleware.exceptionhandling/
 │   ├── ProductionArchitectureTests.cs
 │   ├── ProjectConfigurationTests.cs
 │   └── SourceFileConventionTests.cs
-├── NuciAPI.Middleware.ExceptionHandling.sln       # Solution file
+├── NuciAPI.Middleware.ExceptionHandling.slnx      # Solution file
 ├── ARCHITECTURE.md                                # Root architecture doc
 ├── README.md                                      # This file
 ├── SECURITY.md                                    # Security policy
 ├── PRIVACY.md                                     # Privacy policy
 ├── LICENSE                                        # GPL-3.0-or-later
+├── CONTRIBUTING.md                                # Contribution guidelines
 └── docs/                                          # Technical documentation
+    ├── README.md
     ├── overview.md
     ├── architecture.md
     ├── exception-mapping.md
@@ -188,6 +241,24 @@ NuciAPI.Middleware.ExceptionHandling follows a library-oriented ASP.NET Core mid
 
 See the [architecture documentation](ARCHITECTURE.md) for the system context, principal components, runtime flows, ownership boundaries, dependencies, constraints, and extension points.
 
+## 🏷️ Versioning
+
+This project follows Semantic Versioning (MAJOR.MINOR.PATCH):
+
+| Change Type | Version Bump | Example |
+|-------------|--------------|---------|
+| Breaking API change | MAJOR | 1.0.2 → 2.0.0 |
+| New exception mapping, non-breaking | MINOR | 1.0.2 → 1.1.0 |
+| Bug fix, internal improvement | PATCH | 1.0.2 → 1.0.3 |
+
+The version is defined in `NuciAPI.Middleware.ExceptionHandling.csproj` and release tags use the `v{Version}` format (e.g., `v1.0.3`).
+
+## 🔗 Related Projects
+
+- [NuciAPI.Middleware](https://github.com/hmlendea/nuciapi.middleware): Base middleware infrastructure
+- [NuciAPI.Middleware.Security](https://github.com/hmlendea/nuciapi.middleware.security): Security exceptions and idempotency
+- [NuciAPI.Middleware.Logging](https://github.com/hmlendea/nuciapi.middleware.logging): Request logging middleware
+
 ## 📚 Documentation
 
 | Resource | Description |
@@ -198,6 +269,7 @@ See the [architecture documentation](ARCHITECTURE.md) for the system context, pr
 | [PRIVACY.md](PRIVACY.md) | Data handling practices (no personal data collected) |
 | [LICENSE](LICENSE) | GPL-3.0-or-later license text |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [docs/README.md](docs/README.md) | Documentation index and navigation |
 | [docs/overview.md](docs/overview.md) | High-level purpose, scope, capabilities, and boundaries |
 | [docs/architecture.md](docs/architecture.md) | Detailed component view, data flows, dependencies, extension points |
 | [docs/exception-mapping.md](docs/exception-mapping.md) | Complete authoritative exception-to-HTTP mapping table |
