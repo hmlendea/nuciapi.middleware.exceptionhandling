@@ -172,6 +172,7 @@ Debug unit tests in VS Code, Visual Studio, or Rider using the .NET Test Explore
 | Workflow | Purpose | What it does |
 |----------|---------|--------------|
 | [dotnet.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/dotnet.yml) | Continuous Integration | Restores, builds, and tests on every push and PR to `master` |
+| [security.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/security.yml) | Security Scan | Checks for vulnerable packages and runs CodeQL analysis on push, PR, and weekly schedule |
 | [github-release.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/github-release.yml) | Release Packaging | Packs Release configuration, calculates SHA256, uploads `.nupkg` to GitHub Release, appends checksum to release notes |
 | [nuget-release.yml](https://github.com/hmlendea/nuciapi.middleware.exceptionhandling/blob/master/.github/workflows/nuget-release.yml) | NuGet.org Publishing | Publishes the NuGet package to NuGet.org using OIDC authentication when a GitHub Release is published |
 
@@ -182,7 +183,8 @@ nuciapi.middleware.exceptionhandling/
 ├── .github/workflows/           # CI/CD automation
 │   ├── dotnet.yml              # Continuous integration
 │   ├── github-release.yml      # Release packaging
-│   └── nuget-release.yml       # NuGet.org publishing
+│   ├── nuget-release.yml       # NuGet.org publishing
+│   └── security.yml            # Security scan
 ├── NuciAPI.Middleware.ExceptionHandling/          # Library project
 │   ├── ExceptionHandlingMiddleware.cs             # Core middleware
 │   ├── ExceptionHandlingMiddlewareExtensions.cs   # Public API

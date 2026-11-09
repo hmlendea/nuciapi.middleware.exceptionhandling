@@ -120,6 +120,7 @@ flowchart LR
 | ASP.NET Core request pipeline | Inbound and outbound | `RequestDelegate` and `HttpContext` | Consumer host | Downstream exceptions are mapped to a response by this package; successful processing passes through unchanged |
 | NuGet.org | Outbound | NuGet package distribution | Package release process | Availability and installation are external to the runtime library |
 | GitHub Releases | Outbound | Release asset upload and SHA256 publication | [`.github/workflows/github-release.yml`](.github/workflows/github-release.yml) | The release workflow packages the current release tag version and uploads the `.nupkg` asset |
+| Security scanning | Outbound | Vulnerable package detection and CodeQL analysis | [`.github/workflows/security.yml`](.github/workflows/security.yml) | Weekly and on-push scans report findings to GitHub Code Scanning |
 
 ## 🧵 Cross-Cutting Concerns
 

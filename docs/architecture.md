@@ -223,4 +223,5 @@ ExceptionHandlingMiddlewareExtensions (public)
 | Test project configuration | `NuciAPI.Middleware.ExceptionHandling.UnitTests/NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj` |
 | Solution | `NuciAPI.Middleware.ExceptionHandling.sln` |
 | CI workflow | `.github/workflows/dotnet.yml` |
+| Security workflow | `.github/workflows/security.yml` |
 | Release workflow | `.github/workflows/github-release.yml` |
