@@ -228,6 +228,7 @@ public async Task Given_ResponseAlreadyStarted_When_ExceptionThrown_Then_Handles
 | Push to master | `.github/workflows/dotnet.yml` | `dotnet test --no-build --verbosity normal` |
 | PR to master | `.github/workflows/dotnet.yml` | `dotnet test --no-build --verbosity normal` |
 | Release published | `.github/workflows/github-release.yml` | Pack only (tests run in CI beforehand) |
+| Weekly schedule / Push / PR | `.github/workflows/security.yml` | Vulnerable package check + CodeQL analysis |
 
 ## Related Files
 
@@ -235,3 +236,4 @@ public async Task Given_ResponseAlreadyStarted_When_ExceptionThrown_Then_Handles
 - Test project: `NuciAPI.Middleware.ExceptionHandling.UnitTests/NuciAPI.Middleware.ExceptionHandling.UnitTests.csproj`
 - Main project (with InternalsVisibleTo): `NuciAPI.Middleware.ExceptionHandling/NuciAPI.Middleware.ExceptionHandling.csproj`
 - CI workflow: `.github/workflows/dotnet.yml`
+- Security workflow: `.github/workflows/security.yml`

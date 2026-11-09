@@ -16,7 +16,9 @@ This document covers the development workflow, build process, testing, packaging
 nuciapi.middleware.exceptionhandling/
 ├── .github/workflows/           # CI/CD automation
 │   ├── dotnet.yml              # Continuous integration
-│   └── github-release.yml      # Release packaging
+│   ├── github-release.yml      # Release packaging
+│   ├── nuget-release.yml       # NuGet.org publishing
+│   └── security.yml            # Security scan
 ├── NuciAPI.Middleware.ExceptionHandling/          # Library project
 │   ├── ExceptionHandlingMiddleware.cs             # Core middleware
 │   ├── ExceptionHandlingMiddlewareExtensions.cs   # Public API
